@@ -15,6 +15,7 @@ import { CellButton } from '#/components/CellButton'
 import { LevelButton } from '#/components/LevelButton'
 import { Meter } from '#/components/Meter'
 import { Panel, PanelTitle } from '#/components/Panel'
+import { ThemeToggle } from '#/components/ThemeToggle'
 import { ThinkingDots } from '#/components/ThinkingDots'
 
 export const Route = createFileRoute('/')({ component: GamePage })
@@ -222,17 +223,22 @@ function GamePage() {
 
   return (
     <main className="mx-auto flex w-full max-w-sm flex-col gap-5 px-5 py-14">
-      <header className="text-center">
-        <h1 className="text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500">
+      <header className="relative text-center">
+        <div className="absolute top-0 right-0">
+          <ThemeToggle />
+        </div>
+        <h1 className="text-xs font-bold uppercase tracking-[0.35em] text-zinc-950 dark:text-zinc-50">
           Tic-Tac-Toe
         </h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          You play <span className="font-medium text-zinc-700">X</span> · AI plays{' '}
-          <span className="font-medium text-emerald-600">O</span>
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+          You play{' '}
+          <span className="font-semibold text-zinc-950 dark:text-zinc-50">X</span> · AI
+          plays{' '}
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">O</span>
         </p>
       </header>
 
-      <p className="flex h-5 items-center justify-center gap-2 text-sm text-zinc-600">
+      <p className="flex h-5 items-center justify-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
         {statusContent()}
       </p>
 
@@ -261,7 +267,7 @@ function GamePage() {
           type="button"
           onClick={reset}
           disabled={busy}
-          className="rounded-lg border border-zinc-200 px-5 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-xl bg-zinc-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_20px_-10px_rgba(9,9,11,0.8)] transition-colors hover:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-950 dark:shadow-[0_10px_20px_-10px_rgba(0,0,0,0.9)] dark:hover:bg-white"
         >
           New game
         </button>
@@ -270,7 +276,7 @@ function GamePage() {
       <Panel>
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <PanelTitle>Difficulty</PanelTitle>
-          <span className="text-xs font-medium text-zinc-600">
+          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
             {level} · {LEVEL_LABELS[level]}
           </span>
         </div>
@@ -288,21 +294,21 @@ function GamePage() {
             </LevelButton>
           ))}
         </div>
-        <p className="mt-2 text-xs text-zinc-400">{levelMeta}</p>
+        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{levelMeta}</p>
       </Panel>
 
       <Panel aria-live="polite">
         <div className="mb-3 flex items-center justify-between gap-3">
           <PanelTitle>AI analysis</PanelTitle>
           {ai && (
-            <span className="max-w-36 truncate rounded-full border border-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
+            <span className="max-w-36 truncate rounded-full border border-zinc-300 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
               {ai.source === 'fallback' ? 'local fallback' : (ai.model ?? `level-${level}`)}
             </span>
           )}
         </div>
 
         {!ai && !error && aiPhase === 'idle' && (
-          <p className="text-xs leading-relaxed text-zinc-400">
+          <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
             Make a move — the AI will show its read of the position here.
           </p>
         )}
@@ -314,30 +320,32 @@ function GamePage() {
               <Meter key={name} label={name} value={p} />
             ))}
             {ai.intent && (
-              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+              <p className="mt-1 text-xs leading-relaxed text-zinc-600 dark:text-zinc-300">
                 AI plays{' '}
-                <span className="font-medium text-zinc-800">{CELL_NAMES[ai.cell]}</span> —{' '}
-                {INTENT_LABELS[ai.intent] ?? ai.intent}.
+                <span className="font-semibold text-zinc-950 dark:text-zinc-50">
+                  {CELL_NAMES[ai.cell]}
+                </span>{' '}
+                — {INTENT_LABELS[ai.intent] ?? ai.intent}.
               </p>
             )}
           </div>
         )}
 
         {ai?.source === 'fallback' && (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800">
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
             TypeSafe was unreachable ({ai.reason ?? 'unknown error'}), so the AI played a
             locally computed move.
           </p>
         )}
 
         {error && (
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800">
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
             {error}
             <button
               type="button"
               onClick={() => void runAiSequence(board, gameIdRef.current, level)}
               disabled={busy}
-              className="shrink-0 rounded-md border border-amber-300 px-2 py-1 font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-40"
+              className="shrink-0 rounded-md border border-amber-300 px-2 py-1 font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/15"
             >
               Retry
             </button>

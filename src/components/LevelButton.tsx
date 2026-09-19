@@ -9,10 +9,10 @@ export function LevelButton({
     <button
       type="button"
       className={cn(
-        'h-7 rounded-md text-xs font-medium tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30',
+        'h-8 rounded-lg text-xs font-semibold tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30',
         active
-          ? 'bg-zinc-900 text-white'
-          : 'border border-zinc-200 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700',
+          ? 'bg-zinc-950 text-white shadow-sm dark:bg-zinc-50 dark:text-zinc-950'
+          : 'border border-zinc-300 bg-white text-zinc-600 hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-50 dark:hover:text-zinc-50',
         props.className,
       )}
       {...props}

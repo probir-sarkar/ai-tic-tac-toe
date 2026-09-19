@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Shell(bun:*)",
-      "Shell(Select-String:*)"
+      "Shell(Select-String:*)",
+      "powershell",
+      "Shell(bunx eslint src/components/ThemeProvider.tsx src/components/ThemeToggle.tsx src/components/CellButton.tsx src/components/Panel.tsx src/components/Meter.tsx src/components/LevelButton.tsx src/components/ThinkingDots.tsx src/routes/__root.tsx)",
+      "Shell(bunx eslint src/components/ThemeProvider.tsx src/components/ThemeToggle.tsx src/routes/__root.tsx src/routes/index.tsx)",
+      "Shell(bunx eslint src/components/ThemeProvider.tsx src/components/ThemeToggle.tsx src/routes/__root.tsx)",
+      "Shell(bunx eslint src/__lint-probe.ts)",
+      "Shell(del:*)"
     ],
     "deny": [],
     "defaultMode": "default"

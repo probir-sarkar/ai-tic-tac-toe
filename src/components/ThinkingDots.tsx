@@ -6,7 +6,7 @@ export function ThinkingDots() {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="size-1 rounded-full bg-emerald-500"
+          className="size-1 rounded-full bg-emerald-500 dark:bg-emerald-400"
           animate={{ opacity: [0.2, 1, 0.2] }}
           transition={{
             duration: 1,
