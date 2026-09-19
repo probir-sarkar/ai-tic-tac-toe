@@ -3,6 +3,8 @@ import { env } from 'cloudflare:workers'
 import { TypeSafeClient, choice } from '@typesafe-ai/sdk'
 import {
   CELL_NAMES,
+  GAME_LEVELS,
+  LEVEL_DIFFICULTY,
   availableCells,
   boardAscii,
   boardStatusLabel,
@@ -11,10 +13,8 @@ import {
   fallbackMove,
   formatBoard,
   immediateWinCells,
-  minimaxMove,
   moveIntent,
   pickMoveForLevel,
-  syntheticProbabilities,
 } from '#/lib/tictactoe'
 import type { Board, GameLevel, MoveResponse } from '#/lib/tictactoe'
 
@@ -30,11 +30,11 @@ function validateRequest(input: unknown): { board: Board; level: GameLevel } {
   ) {
     throw new Error('board must be an array of 9 cells, each "X", "O", or null')
   }
-  const n = Number(level)
-  if (!Number.isInteger(n) || n < 1 || n > 10) {
-    throw new Error('level must be an integer from 1 to 10')
+  const n = level as GameLevel
+  if (!GAME_LEVELS.includes(n)) {
+    throw new Error('level must be "easy", "medium", or "hard"')
   }
-  return { board: board as Board, level: n as GameLevel }
+  return { board: board as Board, level: n }
 }
 
 function tacticalMove(
@@ -58,40 +58,13 @@ function tacticalMove(
 }
 
 function correctTacticalMove(board: Board, chosenIndex: number): number {
-  const win = immediateWinCells(board, 'O')[0]
-  if (win !== undefined) return win
+  const wins = immediateWinCells(board, 'O')
+  if (wins.length > 0) return wins[0]
 
-  const block = immediateWinCells(board, 'X')[0]
-  if (block !== undefined) return block
+  const blocks = immediateWinCells(board, 'X')
+  if (blocks.length > 0) return blocks[0]
 
   return chosenIndex
-}
-
-function localLevelMove(
-  board: Board,
-  level: GameLevel,
-  source: MoveResponse['source'],
-  model: string | null,
-  reason?: string,
-): MoveResponse {
-  const ideal =
-    level === 10
-      ? minimaxMove(board, 'O')
-      : pickMoveForLevel(board, level, 'O', fallbackMove(board, 'O'), null)
-  const cell = pickMoveForLevel(board, level, 'O', ideal, null)
-  const intent = moveIntent(board, cell, 'O')
-  const probabilities = syntheticProbabilities(board, cell)
-  const confidence = probabilities[CELL_NAMES[cell]] ?? 1
-  return {
-    cell,
-    source,
-    model,
-    confidence,
-    probabilities,
-    intent,
-    intentConfidence: confidence,
-    reason,
-  }
 }
 
 export const requestAiMove = createServerFn({ method: 'POST' })
@@ -105,37 +78,23 @@ export const requestAiMove = createServerFn({ method: 'POST' })
       throw new Error(`Game is over (${status})`)
     }
 
-    if (level === 10) {
-      const cell = minimaxMove(board, 'O')
-      return tacticalMove(board, cell, 'typesafe', 'minimax')
-    }
+    if (level !== 'easy') {
+      const wins = immediateWinCells(board, 'O')
+      if (wins.length > 0) {
+        return tacticalMove(board, wins[0], 'typesafe', 'rules')
+      }
 
-    if (level <= 5) {
-      return localLevelMove(board, level, 'typesafe', `level-${level}`)
-    }
-
-    const forcedWin = immediateWinCells(board, 'O')[0]
-    if (forcedWin !== undefined) {
-      return tacticalMove(board, forcedWin, 'typesafe', 'rules')
-    }
-
-    const forcedBlock = immediateWinCells(board, 'X')[0]
-    if (forcedBlock !== undefined) {
-      return tacticalMove(board, forcedBlock, 'typesafe', 'rules')
+      const blocks = immediateWinCells(board, 'X')
+      if (blocks.length > 0) {
+        return tacticalMove(board, blocks[0], 'typesafe', 'rules')
+      }
     }
 
     const apiKey = env.TYPESAFE_API_KEY
     if (!apiKey) {
-      const cell = pickMoveForLevel(
-        board,
-        level,
-        'O',
-        fallbackMove(board, 'O'),
-        null,
-      )
       return tacticalMove(
         board,
-        cell,
+        fallbackMove(board, 'O'),
         'fallback',
         null,
         'TYPESAFE_API_KEY is not set',
@@ -156,7 +115,7 @@ export const requestAiMove = createServerFn({ method: 'POST' })
           board_ascii: boardAscii(board),
           empty_cells: available.map((i) => CELL_NAMES[i]),
           tactics,
-          difficulty_level: level,
+          difficulty_level: LEVEL_DIFFICULTY[level],
         },
         questions: {
           move: choice(
@@ -184,7 +143,7 @@ export const requestAiMove = createServerFn({ method: 'POST' })
 
       if (idealIndex < 0 || !available.includes(idealIndex)) {
         idealIndex = fallbackMove(board, 'O')
-      } else if (level >= 9) {
+      } else if (level === 'hard') {
         idealIndex = correctTacticalMove(board, idealIndex)
       }
 
@@ -196,7 +155,6 @@ export const requestAiMove = createServerFn({ method: 'POST' })
       const chosenIndex = pickMoveForLevel(
         board,
         level,
-        'O',
         idealIndex,
         probabilities,
       )
@@ -212,18 +170,17 @@ export const requestAiMove = createServerFn({ method: 'POST' })
         probabilities,
         intent,
         intentConfidence: overridden ? 1 : moveAnswer.confidence,
-        reason: overridden ? `Adjusted for level ${level}` : undefined,
+        reason: overridden ? `Adjusted for ${level} difficulty` : undefined,
       }
     } catch (error) {
       const reason =
         error instanceof Error ? error.message : 'TypeSafe request failed'
-      const cell = pickMoveForLevel(
+      return tacticalMove(
         board,
-        level,
-        'O',
         fallbackMove(board, 'O'),
+        'fallback',
         null,
+        reason,
       )
-      return tacticalMove(board, cell, 'fallback', null, reason)
     }
   })

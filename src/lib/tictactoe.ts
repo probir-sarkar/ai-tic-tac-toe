@@ -196,89 +196,26 @@ export function fallbackMove(board: Board, player: Player): number {
   )
 }
 
-export type GameLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+export type GameLevel = 'easy' | 'medium' | 'hard'
+
+export const GAME_LEVELS = ['easy', 'medium', 'hard'] as const
 
 export const LEVEL_LABELS: Record<GameLevel, string> = {
-  1: 'Beginner',
-  2: 'Casual',
-  3: 'Learning',
-  4: 'Novice',
-  5: 'Intermediate',
-  6: 'Skilled',
-  7: 'Advanced',
-  8: 'Expert',
-  9: 'Master',
-  10: 'Unbeatable',
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Hard',
 }
 
-function randomCell(board: Board): number {
-  const available = availableCells(board)
-  return available[Math.floor(Math.random() * available.length)]
+export const LEVEL_DIFFICULTY: Record<GameLevel, number> = {
+  easy: 3,
+  medium: 6,
+  hard: 10,
 }
 
-function winOnlyMove(board: Board, player: Player): number | null {
-  const win = immediateWinCells(board, player)[0]
-  return win ?? null
-}
-
-function winOrBlockMove(board: Board, player: Player): number | null {
-  const opponent: Player = player === 'X' ? 'O' : 'X'
-  const win = immediateWinCells(board, player)[0]
-  if (win !== undefined) return win
-  const block = immediateWinCells(board, opponent)[0]
-  if (block !== undefined) return block
-  return null
-}
-
-function minimaxScore(
-  board: Board,
-  player: Player,
-  aiPlayer: Player,
-  maximizing: boolean,
-): number {
-  const result = getWinner(board)
-  const opponent: Player = aiPlayer === 'X' ? 'O' : 'X'
-  if (result?.winner === aiPlayer) return 1
-  if (result?.winner === opponent) return -1
-  if (isBoardFull(board)) return 0
-
-  const moves = availableCells(board)
-  if (maximizing) {
-    return Math.max(
-      ...moves.map((i) => {
-        const next = [...board]
-        next[i] = player
-        const nextPlayer: Player = player === 'X' ? 'O' : 'X'
-        return minimaxScore(next, nextPlayer, aiPlayer, false)
-      }),
-    )
-  }
-  return Math.min(
-    ...moves.map((i) => {
-      const next = [...board]
-      next[i] = player
-      const nextPlayer: Player = player === 'X' ? 'O' : 'X'
-      return minimaxScore(next, nextPlayer, aiPlayer, true)
-    }),
-  )
-}
-
-/** Perfect play via minimax — used at level 10. */
-export function minimaxMove(board: Board, player: Player): number {
-  const opponent: Player = player === 'X' ? 'O' : 'X'
-  let bestScore = -Infinity
-  let bestMove = availableCells(board)[0]
-
-  for (const i of availableCells(board)) {
-    const next = [...board]
-    next[i] = player
-    const score = minimaxScore(next, opponent, player, false)
-    if (score > bestScore) {
-      bestScore = score
-      bestMove = i
-    }
-  }
-  return bestMove
+const MISTAKE_CHANCE: Record<GameLevel, number> = {
+  easy: 0.4,
+  medium: 0.15,
+  hard: 0,
 }
 
 export function normalizeProbabilities(
@@ -315,45 +252,18 @@ function rankedCellsFromProbs(
     .map(({ i }) => i)
 }
 
-/** Pick a move based on difficulty level (1 = easiest, 10 = perfect). */
 export function pickMoveForLevel(
   board: Board,
   level: GameLevel,
-  player: Player,
   idealMove: number,
   probabilities: Record<string, number> | null,
 ): number {
-  if (level === 10) return minimaxMove(board, player)
-
-  if (level <= 5) {
-    switch (level) {
-      case 1:
-        return randomCell(board)
-      case 2: {
-        const win = winOnlyMove(board, player)
-        return win ?? randomCell(board)
-      }
-      case 3: {
-        const tactical = winOrBlockMove(board, player)
-        return tactical ?? randomCell(board)
-      }
-      case 4:
-      case 5:
-        return fallbackMove(board, player)
-    }
-  }
-
-  if (!probabilities) return idealMove
+  const mistakeChance = MISTAKE_CHANCE[level]
+  if (mistakeChance <= 0 || !probabilities) return idealMove
 
   const ranked = rankedCellsFromProbs(board, probabilities)
-  const mistakeChance = level === 6 ? 0.35 : level === 7 ? 0.2 : level === 8 ? 0.1 : 0
-  if (mistakeChance > 0 && Math.random() < mistakeChance && ranked.length > 1) {
-    const alt = ranked[1]
-    if (alt !== undefined) return alt
+  if (ranked.length > 1 && Math.random() < mistakeChance) {
+    return ranked[1]
   }
   return idealMove
-}
-
-export function usesTypeSafeApi(level: GameLevel): boolean {
-  return level >= 6 && level <= 9
 }

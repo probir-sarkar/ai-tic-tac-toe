@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import {
   CELL_NAMES,
+  GAME_LEVELS,
   LEVEL_LABELS,
   availableCells,
   boardStatusLabel,
@@ -26,8 +27,6 @@ const INTENT_LABELS: Record<string, string> = {
   fork: 'setting up a fork',
   develop: 'developing its position',
 }
-
-const LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const
 
 const THINKING_MIN_MS = 350
 const REVEAL_STAGGER_MS = 110
@@ -75,6 +74,18 @@ function buildCellProbs(
   return result
 }
 
+const REVEAL_TOP = 3
+
+function revealOrder(
+  board: Board,
+  probabilities: Record<number, number>,
+): number[] {
+  return availableCells(board)
+    .filter((i) => (probabilities[i] ?? 0) > 0)
+    .sort((a, b) => (probabilities[b] ?? 0) - (probabilities[a] ?? 0))
+    .slice(0, REVEAL_TOP)
+}
+
 function localFallbackMove(forBoard: Board, reason: string): MoveResponse {
   return {
     cell: fallbackMove(forBoard, 'O'),
@@ -95,7 +106,7 @@ function GamePage() {
   const [cellProbs, setCellProbs] = useState<Record<number, number>>({})
   const [ai, setAi] = useState<MoveResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [level, setLevel] = useState<GameLevel>(5)
+  const [level, setLevel] = useState<GameLevel>('medium')
   const [gameId, setGameId] = useState(0)
   const gameIdRef = useRef(0)
 
@@ -144,9 +155,7 @@ function GamePage() {
       if (gameIdRef.current !== gid) return
 
       const allProbs = buildCellProbs(forBoard, data.cell, data.probabilities)
-      const order = availableCells(forBoard).sort(
-        (a, b) => (allProbs[b] ?? 0) - (allProbs[a] ?? 0),
-      )
+      const order = revealOrder(forBoard, allProbs)
 
       await delay(THINKING_MIN_MS)
       if (gameIdRef.current !== gid) return
@@ -160,7 +169,7 @@ function GamePage() {
         err instanceof Error ? err.message : 'TypeSafe request failed',
       )
       const allProbs = buildCellProbs(forBoard, fallback.cell, fallback.probabilities)
-      if (!(await revealProbs(allProbs, availableCells(forBoard), gid))) {
+      if (!(await revealProbs(allProbs, revealOrder(forBoard, allProbs), gid))) {
         return
       }
 
@@ -215,11 +224,8 @@ function GamePage() {
   const topCells = ai?.probabilities
     ? Object.entries(ai.probabilities)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
+        .slice(0, REVEAL_TOP)
     : []
-
-  const levelMeta =
-    level <= 5 ? 'local AI' : level === 10 ? 'perfect play' : 'TypeSafe'
 
   return (
     <main className="mx-auto flex w-full max-w-sm flex-col gap-5 px-5 py-14">
@@ -274,27 +280,23 @@ function GamePage() {
       </div>
 
       <Panel>
-        <div className="mb-3 flex items-baseline justify-between gap-3">
+        <div className="mb-3">
           <PanelTitle>Difficulty</PanelTitle>
-          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-50">
-            {level} · {LEVEL_LABELS[level]}
-          </span>
         </div>
-        <div role="group" aria-label="Difficulty level" className="grid grid-cols-10 gap-1">
-          {LEVELS.map((n) => (
+        <div role="group" aria-label="Difficulty level" className="grid grid-cols-3 gap-1">
+          {GAME_LEVELS.map((n) => (
             <LevelButton
               key={n}
               active={level === n}
               disabled={!canChangeLevel}
-              aria-label={`Level ${n}: ${LEVEL_LABELS[n]}`}
+              aria-label={`${LEVEL_LABELS[n]} difficulty`}
               aria-pressed={level === n}
               onClick={() => setLevel(n)}
             >
-              {n}
+              {LEVEL_LABELS[n]}
             </LevelButton>
           ))}
         </div>
-        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{levelMeta}</p>
       </Panel>
 
       <Panel aria-live="polite">
@@ -302,7 +304,7 @@ function GamePage() {
           <PanelTitle>AI analysis</PanelTitle>
           {ai && (
             <span className="max-w-36 truncate rounded-full border border-zinc-300 bg-zinc-50 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-              {ai.source === 'fallback' ? 'local fallback' : (ai.model ?? `level-${level}`)}
+              {ai.source === 'fallback' ? 'local fallback' : (ai.model ?? 'typesafe')}
             </span>
           )}
         </div>
