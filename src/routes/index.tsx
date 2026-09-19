@@ -11,7 +11,7 @@ import {
   syntheticProbabilities,
 } from '#/lib/tictactoe'
 import type { Board, GameLevel, MoveResponse } from '#/lib/tictactoe'
-import { requestAiMove as askAi } from '#/lib/aiMove'
+import { requestAiMove as askAi } from '#/lib/aiMove.functions'
 import { CellButton } from '#/components/CellButton'
 import { LevelButton } from '#/components/LevelButton'
 import { Meter } from '#/components/Meter'
