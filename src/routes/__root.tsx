@@ -31,17 +31,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
-        {import.meta.env.DEV ? (
-          <>
-            <link rel="stylesheet" href="/virtual:stylex.css" />
-            <script
-              type="module"
-              dangerouslySetInnerHTML={{
-                __html: `import('virtual:stylex:runtime')`,
-              }}
-            />
-          </>
-        ) : null}
       </head>
       <body>
         {children}
