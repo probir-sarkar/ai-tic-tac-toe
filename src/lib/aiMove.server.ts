@@ -82,10 +82,14 @@ export async function generateAiMove({
   }
 
   const tactics = buildTactics(board, 'O')
-  const client = new TypeSafeClient({ apiKey })
+  const client = new TypeSafeClient({
+    apiKey: env.OPENROUTER_API_KEY,
+    baseURL: 'https://openrouter.ai/api',
+  })
 
   try {
     const response = await client.systemOne({
+      model: 'jev-1.13',
       state: {
         game: 'tic-tac-toe',
         rules:
@@ -107,10 +111,7 @@ export async function generateAiMove({
             'Use `board_ascii` and `board_text` to understand the live position.',
           ].join(' '),
           Object.fromEntries(
-            available.map((i) => [
-              CELL_NAMES[i],
-              describeMove(board, i, 'O'),
-            ]),
+            available.map((i) => [CELL_NAMES[i], describeMove(board, i, 'O')]),
           ),
         ),
       },
