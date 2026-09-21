@@ -1,5 +1,10 @@
 export const SITE_NAME = 'AI Tic-Tac-Toe'
 export const SITE_TAGLINE = 'Play against TypeSafe AI with live move probabilities'
+export const SITE_TITLE = 'AI Tic-Tac-Toe | TypeSafe AI with move probabilities'
+export const META_DESCRIPTION =
+  'Free tic-tac-toe vs TypeSafe AI. Pick Easy, Medium, or Hard, watch move probabilities before each play, and see confidence scores in real time.'
+export const SOCIAL_DESCRIPTION =
+  'Free tic-tac-toe against TypeSafe AI. Three difficulty levels and live move probabilities before every AI play.'
 export const SITE_DESCRIPTION =
   'Free browser tic-tac-toe against an AI powered by TypeSafe System One. Choose Easy, Medium, or Hard difficulty, watch the AI reveal move probabilities before each play, and see confidence scores and tactical intent in real time. Built with TanStack Start on Cloudflare Workers.'
 export const SITE_KEYWORDS = [
