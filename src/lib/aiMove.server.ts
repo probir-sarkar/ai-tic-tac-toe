@@ -70,14 +70,14 @@ export async function generateAiMove({
     }
   }
 
-  const apiKey = env.TYPESAFE_API_KEY
+  const apiKey = env.OPENROUTER_API_KEY
   if (!apiKey) {
     return tacticalMove(
       board,
       fallbackMove(board, 'O'),
       'fallback',
       null,
-      'TYPESAFE_API_KEY is not set',
+      'OPENROUTER_API_KEY is not set',
     )
   }
 

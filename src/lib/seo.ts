@@ -15,7 +15,7 @@ export const SITE_KEYWORDS = [
   'Cloudflare Workers',
 ].join(', ')
 
-const DEFAULT_SITE_URL = 'https://ai-tic-tac-toe.workers.dev'
+const DEFAULT_SITE_URL = 'https://ai-tic-tac-toe.probir.dev'
 
 export function getSiteUrl(): string {
   const configured = import.meta.env.VITE_SITE_URL as string | undefined

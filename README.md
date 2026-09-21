@@ -27,14 +27,12 @@ Open [http://localhost:3000](http://localhost:3000).
 Create a `.env` file for local development:
 
 ```bash
-TYPESAFE_API_KEY=your_typesafe_api_key
 OPENROUTER_API_KEY=your_openrouter_api_key
 ```
 
 For production on Cloudflare Workers:
 
 ```bash
-wrangler secret put TYPESAFE_API_KEY
 wrangler secret put OPENROUTER_API_KEY
 ```
 
