@@ -43,7 +43,7 @@ Set your public site URL for canonical links and social previews:
 VITE_SITE_URL=https://your-domain.com
 ```
 
-If `VITE_SITE_URL` is not set, the app defaults to `https://ai-tic-tac-toe.workers.dev`.
+If `VITE_SITE_URL` is not set, the app defaults to `https://ai-tic-tac-toe.probir.dev`.
 
 ## Scripts
 
