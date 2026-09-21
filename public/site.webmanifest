@@ -1,0 +1,23 @@
+{
+  "name": "AI Tic-Tac-Toe",
+  "short_name": "AI TicTacToe",
+  "description": "Play tic-tac-toe against TypeSafe AI with live move probabilities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1111",
+  "theme_color": "#0B1111",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

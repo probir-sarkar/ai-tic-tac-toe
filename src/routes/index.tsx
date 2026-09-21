@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
+import { faqJsonLd, videoGameJsonLd, webApplicationJsonLd } from '#/lib/seo'
 import {
   CELL_NAMES,
   GAME_LEVELS,
@@ -19,7 +20,25 @@ import { Panel, PanelTitle } from '#/components/Panel'
 import { ThemeToggle } from '#/components/ThemeToggle'
 import { ThinkingDots } from '#/components/ThinkingDots'
 
-export const Route = createFileRoute('/')({ component: GamePage })
+export const Route = createFileRoute('/')({
+  head: () => ({
+    scripts: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify(webApplicationJsonLd()),
+      },
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify(videoGameJsonLd()),
+      },
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify(faqJsonLd()),
+      },
+    ],
+  }),
+  component: GamePage,
+})
 
 const INTENT_LABELS: Record<string, string> = {
   win: 'a winning move',

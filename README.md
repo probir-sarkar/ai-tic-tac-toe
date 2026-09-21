@@ -1,211 +1,112 @@
-Welcome to your new TanStack Start app!
+# AI Tic-Tac-Toe
 
-# Getting Started
+Play tic-tac-toe against an AI powered by [TypeSafe System One](https://typesafe.ai). Choose a difficulty, make your move as **X**, and watch the AI reveal move probabilities before playing **O**.
 
-To run this application:
+Built with [TanStack Start](https://tanstack.com/start), deployed on [Cloudflare Workers](https://workers.cloudflare.com).
 
-```bash
-npm install
-npm run dev
-```
+## Features
 
-# Building For Production
+- Three difficulty levels: Easy, Medium, Hard
+- Live AI analysis with confidence meters and tactical intent
+- Animated probability reveal before each AI move
+- Local fallback when the AI service is unreachable
+- Light and dark theme
+- SEO, Open Graph, JSON-LD, sitemap, robots.txt, and llms.txt
 
-To build this application for production:
-
-```bash
-npm run build
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+## Getting started
 
 ```bash
-npm run lint
-npm run format
-npm run check
+bun install
+bun run dev
 ```
 
+Open [http://localhost:3000](http://localhost:3000).
 
-## Deploy to Cloudflare Workers
+## Environment variables
 
-This project uses the Cloudflare Vite plugin (configured in `vite.config.ts`) and `wrangler.jsonc`:
+Create a `.env` file for local development:
 
-1. Install Wrangler: `npm install -g wrangler`
-2. Authenticate: `wrangler login`
-3. Deploy: `npx wrangler deploy`
-
-For production env vars, run `wrangler secret put MY_VAR` for each secret listed in `.env.example`. Public (non-secret) vars go in `wrangler.jsonc` under `vars`.
-
-KV, D1, R2, and Durable Object bindings are configured in `wrangler.jsonc` — see https://developers.cloudflare.com/workers/wrangler/configuration/.
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
+```bash
+TYPESAFE_API_KEY=your_typesafe_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
 ```
 
-Then anywhere in your JSX you can use it like so:
+For production on Cloudflare Workers:
 
-```tsx
-<Link to="/about">About</Link>
+```bash
+wrangler secret put TYPESAFE_API_KEY
+wrangler secret put OPENROUTER_API_KEY
 ```
 
-This will create a link that will navigate to the `/about` route.
+Set your public site URL for canonical links and social previews:
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
+```bash
+# .env (local) or wrangler.jsonc vars (production)
+VITE_SITE_URL=https://your-domain.com
 ```
 
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
+If `VITE_SITE_URL` is not set, the app defaults to `https://ai-tic-tac-toe.workers.dev`.
 
-## Server Functions
+## Scripts
 
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
+```bash
+bun run dev       # Start dev server on port 3000
+bun run build     # Production build (includes static prerender)
+bun run deploy    # Build and deploy to Cloudflare Workers
+bun run lint      # ESLint
+bun run format    # Prettier + ESLint fix
+bun run check     # Prettier check
 ```
 
-## API Routes
+## Deploy
 
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
+```bash
+wrangler login
+bun run deploy
 ```
 
-## Data Fetching
+The project uses the Cloudflare Vite plugin (`vite.config.ts`) and `wrangler.jsonc`.
 
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+## SEO and AI discoverability
 
-For example:
+Metadata is centralized in `src/lib/seo.ts` and applied via TanStack Router `head` options.
 
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
+| Asset / route | Purpose |
+|---|---|
+| `public/favicon.svg` | Site icon |
+| `public/apple-touch-icon.png` | iOS home screen icon (rendered from favicon) |
+| `public/og-image.jpg` | Open Graph / Twitter preview image |
+| `public/site.webmanifest` | PWA manifest |
+| `/sitemap.xml` | Search engine sitemap |
+| `/robots.txt` | Crawler rules (includes GPTBot, Claude-Web, PerplexityBot) |
+| `/llms.txt` | Machine-readable project summary for AI systems |
 
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
+Structured data (JSON-LD) on the home page:
 
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
+- `WebApplication`
+- `VideoGame`
+- `FAQPage`
+
+## Tech stack
+
+- TanStack Start + TanStack Router (React 19)
+- TypeSafe AI SDK (`@typesafe-ai/sdk`) via OpenRouter
+- Tailwind CSS v4
+- Cloudflare Workers
+
+## Project structure
+
+```
+src/
+  routes/           # File-based routes (__root, index, robots.txt, sitemap.xml, llms.txt)
+  lib/
+    seo.ts          # Site metadata, JSON-LD, llms.txt content
+    tictactoe.ts    # Game logic
+    aiMove.server.ts
+  components/       # UI components
+public/             # Static assets (favicon, OG image, manifest)
 ```
 
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+## License
 
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Open source.
